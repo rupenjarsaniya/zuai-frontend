@@ -1,8 +1,17 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import "../../promisePolyfill";
 import "./globals.css";
 import "react-toastify/dist/ReactToastify.css";
+import "react-pdf/dist/esm/Page/TextLayer.css";
+import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 import { ToastContainer } from "react-toastify";
+import { pdfjs } from "react-pdf";
+
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+    `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`,
+    import.meta.url,
+).toString();
 
 const geistSans = localFont({
     src: "./fonts/GeistVF.woff",
