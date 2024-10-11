@@ -23,7 +23,7 @@ export const CourseAndSubjectSelection: FC<CourseAndSubjectSelectionProps> = ({
 }) => (
     <div className="mt-[24px] flex flex-col gap-[6px]">
         <p className="text-[#7A8196] font-semibold text-base">Select your course & subjects*</p>
-        <div className="flex gap-[21px] justify-start">
+        <div className="flex sm:flex-row flex-col sm:gap-[21px] gap-[4px] justify-start sm:items-center items-start">
             <SelectInput
                 placeholder="Coursework Type"
                 options={courses}

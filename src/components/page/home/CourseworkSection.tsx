@@ -9,8 +9,8 @@ export const CourseworkSection: FC = () => (
         <h2 className="text-[#5B6170] text-xl font-bold">My coursework</h2>
         <div className="flex flex-wrap gap-[16px]">
             <CourseWorkItem
-                title="How does the temperature of a Copp..."
-                description="How does the temperature of a Copper pipe affect the time it takes a magnet to fall thought..."
+                title="How does the temperature of a Copp How does the temperature of a Copp How does the temperature of a Copp"
+                description="How does the temperature of a Copper pipe affect the time it takes a magnet to fall thought takes a magnet to fall thought takes a magnet to fall thoughts"
                 previewImage={A4Svg}
                 tags={[
                     { image: UserLabelSvg, title: "Physics HL" },
@@ -18,8 +18,8 @@ export const CourseworkSection: FC = () => (
                 ]}
             />
             <CourseWorkItem
-                title="How does the temperature of a Copp..."
-                description="How does the temperature of a Copper pipe affect the time it takes a magnet to fall thought..."
+                title="How does the temperature of a Copp"
+                description="How does the temperature of a Copper pipe affect the time it takes a magnet to fall thought"
                 previewImage={A4Svg}
                 tags={[
                     { image: UserLabelSvg, title: "Physics HL" },

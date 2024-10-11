@@ -17,13 +17,12 @@ export const FileUpload: FC<FileUploadProps> = ({ file, handleFileUpload, reset 
     <div className="border-2 border-[#CEC4EB] border-dashed rounded-[12px] h-[240px] flex flex-col items-center justify-center gap-[20px]">
         <div className="flex flex-col items-center justify-center">
             {file ? (
-                <div className="border border-[#EAF0F2] flex items-center justify-center gap-[12px] relative rounded-[12px] p-[4px] pr-[12px] select-none">
+                <div className="max-w-[250px] border border-[#EAF0F2] flex items-center justify-center gap-[12px] relative rounded-[12px] p-[4px] pr-[12px] select-none">
                     <Image src={PreviewSvg} alt="Preview Image" />
                     <div className="flex items-center justify-center gap-[4px]">
                         <Image src={CorrectSvg} alt="Correct" />
-                        <p className="text-[#7A8196] text-sm	font-semibold">{file.name}</p>
+                        <p className="text-[#7A8196] text-sm font-semibold max-w-[150px] truncate">{file.name}</p>
                     </div>
-
                     <div
                         className="w-[16px] h-[16px] rounded-full border border-[#C1CCD6] flex items-center justify-center absolute -top-2 -right-2 bg-[#FFFFFF]"
                         onClick={reset}

@@ -22,8 +22,8 @@ interface ExploreCourseworkSectionProps {
 export const ExploreCourseworkSection: FC<ExploreCourseworkSectionProps> = ({ selectedTab, setSelectedTab }) => (
     <div className="flex flex-col gap-[12px]">
         <h2 className="text-[#5B6170] text-xl font-bold">Explore coursework</h2>
-        <Tabs defaultValue={selectedTab} className="">
-            <TabsList className="bg-transparent mb-[10px]">
+        <Tabs defaultValue={selectedTab}>
+            <TabsList className="bg-transparent mb-[10px] flex-wrap h-fit justify-start gap-[6px]">
                 {ListOfTabs.map((tab) => (
                     <TabsTrigger
                         key={tab.id}

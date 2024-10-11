@@ -16,7 +16,7 @@ export const EssayTitleInput: FC<InputProps> = ({ value, onChange, error, setErr
             placeholder="how nation works..."
             value={value}
             onChange={onChange}
-            className={`w-[330px] border rounded-[24px] bg-transparent text-[#5B6170] pt-[8px] pb-[8px] pl-[16px] ${
+            className={`sm:w-[330px] w-full border rounded-[24px] bg-transparent text-[#5B6170] pt-[8px] pb-[8px] pl-[16px] ${
                 error ? "border-[#FF4800]" : "border-[#EAF0F2]"
             }`}
             onFocus={setError}

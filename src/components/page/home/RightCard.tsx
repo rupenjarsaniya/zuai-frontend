@@ -4,7 +4,7 @@ import GradeCardPng from "@/assets/images/gradecard.png";
 import { FC } from "react";
 
 export const RightCard: FC = () => (
-    <div className="w-[50%] flex flex-col items-center">
+    <div className="w-[50%] hidden lg:flex flex-col items-center">
         <Image src={UserPng} alt="user" />
         <div className="bg-[#FFFFFF] border border-[#D6DFE4] rounded-[24px] pt-[28px] pl-[28px] pr-[28px] relative h-full flex flex-col items-center justify-between overflow-hidden">
             <h1 className="text-[#6947BF] font-extrabold	text-[33px]">Evaluate your Coursework with a single click</h1>
