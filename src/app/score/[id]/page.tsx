@@ -10,6 +10,7 @@ import useBreakpoints from "@/hook/useBreakpoint";
 import { useParams } from "next/navigation";
 import { Coursework } from "@/lib/types";
 import moment from "moment";
+import { getCourseworkById } from "@/services/api.service";
 
 const ActionButton: FC<{ onClick: () => void; text: string }> = ({ onClick, text }) => (
     <Button className="bg-[#FFFFFF] hover:bg-[#FFFFFF] flex items-center gap-[4px] rounded-[24px] w-fit" onClick={onClick}>
@@ -22,72 +23,66 @@ const Score: FC = () => {
     const params = useParams();
     const { isSm, isMd, is2xl, isLg, isXl } = useBreakpoints();
     const [openPdf, setOpenPdf] = useState(false);
-    const [openAccordionIndex, setOpenAccordionIndex] = useState<number | null>(null);
-    const [coursework, setCoursework] = useState<Coursework | undefined>(undefined);
+    const [openAccordionIndex, setOpenAccordionIndex] = useState<string | null>(null);
+    const [coursework, setCoursework] = useState<Coursework | null>(null);
+    const [isCollapsed, setIsCollapsed] = useState(false);
 
-    const isAccordionOpen = openAccordionIndex !== null;
+    const isAccordionOpen = useMemo(() => openAccordionIndex !== null, [openAccordionIndex]);
 
-    const handleAccordionToggle = (index: number) => {
-        setOpenAccordionIndex(openAccordionIndex === index ? null : index);
+    const handleAccordionToggle = (index: string) => {
+        setOpenAccordionIndex((prev) => (prev === index ? null : index));
+        // This condition is to collapse the accordion when the screen size is large, and the accordion is open
+        setIsCollapsed((isLg || isXl || is2xl) && openAccordionIndex !== index);
     };
 
-    const handlePdfToggle = () => {
+    const togglePdf = () => {
         setOpenPdf((prev) => !prev);
+        // This condition exists because the accordion should not be opened when the pdf is opened
+        if (isLg) {
+            setOpenAccordionIndex(null);
+        }
+        setIsCollapsed(false);
     };
 
-    const renderPdfViewer = (alwaysShow = false) =>
-        (alwaysShow || openPdf) && coursework ? (
-            <PdfViewer pdfUrl={coursework.file} fileName={coursework.fileName} handleClose={handlePdfToggle} />
-        ) : null;
+    const handleCollapseAndExpand = () => {
+        // This condition exists because the accordion should not be opened when the pdf is opened
+        if (isXl || is2xl) {
+            setOpenAccordionIndex((prev) => (prev === null ? "Criteria A:" : null));
+        }
+        setIsCollapsed((prev) => !prev);
+    };
 
     const remark = useMemo(() => {
-        if (!coursework) {
-            return { textColor: "", text: "-" };
-        }
+        if (!coursework) return { textColor: "", text: "-" };
 
         const percentage = (coursework?.marks * 100) / 20;
-
         if (percentage <= 30) return { textColor: "text-[#EB751F]", text: "Poor" };
         if (percentage <= 50) return { textColor: "text-[#F9C94E]", text: "Average" };
         return { textColor: "text-[#3CC28A]", text: "Good" };
     }, [coursework]);
 
     useEffect(() => {
+        // This condition exists because the pdf should be closed when the accordion is open and the screen size is large
         if (isLg && isAccordionOpen && openPdf) {
             setOpenPdf(false);
         }
     }, [isAccordionOpen, isLg, openPdf]);
 
     useEffect(() => {
-        const metadata = localStorage.getItem("coursework_zuai") || "[]";
-        const metadataArray = JSON.parse(metadata) as Coursework[];
-        const _coursework = metadataArray.find((coursework) => coursework.id === params.id);
+        const _coursework = getCourseworkById(params.id as string);
         setCoursework(_coursework);
     }, [params.id]);
 
-    if (typeof Promise.withResolvers === "undefined") {
-        if (typeof window !== "undefined") {
-            // @ts-expect-error This does not exist outside of polyfill which this is doing
-            window.Promise.withResolvers = function () {
-                let resolve, reject;
-                const promise = new Promise((res, rej) => {
-                    resolve = res;
-                    reject = rej;
-                });
-                return { promise, resolve, reject };
-            };
-        } else {
-            // @ts-expect-error This does not exist outside of polyfill which this is doing
-            global.Promise.withResolvers = function () {
-                let resolve, reject;
-                const promise = new Promise((res, rej) => {
-                    resolve = res;
-                    reject = rej;
-                });
-                return { promise, resolve, reject };
-            };
-        }
-    }
+    const renderPdfViewer = (alwaysShow = false) =>
+        (alwaysShow || openPdf) && coursework ? (
+            <PdfViewer
+                pdfUrl={coursework.file}
+                fileName={coursework.fileName}
+                handleClose={togglePdf}
+                handleCollapseAndExpand={handleCollapseAndExpand}
+                isCollapsed={isCollapsed}
+            />
+        ) : null;
 
     if (!coursework) {
         return null;
@@ -102,9 +97,7 @@ const Score: FC = () => {
                     <div
                         className={`flex flex-col gap-[14px] ${isAccordionOpen ? "lg:w-[520px] xl:w-[560px]" : "lg:w-[356px]"} ${isLg ? (!openPdf ? "w-full" : "") : "w-full"}`}
                     >
-                        {(isMd || isLg) && !openPdf && (
-                            <FileCard fileName={coursework.fileName} setOpenPdf={handlePdfToggle} />
-                        )}
+                        {(isMd || isLg) && !openPdf && <FileCard fileName={coursework.fileName} setOpenPdf={togglePdf} />}
 
                         {isMd && openPdf && renderPdfViewer()}
 
@@ -119,16 +112,21 @@ const Score: FC = () => {
 
                         {isSm &&
                             (openPdf ? (
-                                <ActionButton onClick={handlePdfToggle} text="Check detailed Evaluation" />
+                                <ActionButton onClick={togglePdf} text="Check detailed Evaluation" />
                             ) : (
-                                <ActionButton onClick={handlePdfToggle} text="Expand & view your file" />
+                                <ActionButton onClick={togglePdf} text="Expand & view your file" />
                             ))}
 
                         {isSm && renderPdfViewer()}
 
                         {!isSm || !openPdf ? (
                             <>
-                                <Accordion type="single" collapsible className="w-full flex flex-col gap-[8px]">
+                                <Accordion
+                                    type="single"
+                                    collapsible
+                                    value={openAccordionIndex as string}
+                                    className="w-full flex flex-col gap-[8px]"
+                                >
                                     <CriteriaAccordionItem
                                         criteriaTitle="Criteria A:"
                                         criteriaDescription="Understanding Knowledge Questions"
@@ -147,7 +145,7 @@ const Score: FC = () => {
                                             { text: "Needs to strengthen the arguments supporting knowledge questions." },
                                             { text: "Should consider alternative perspectives in resolving disputes." },
                                         ]}
-                                        handleAccordionToggle={() => handleAccordionToggle(0)}
+                                        handleAccordionToggle={() => handleAccordionToggle("Criteria A:")}
                                     />
                                     <CriteriaAccordionItem
                                         criteriaTitle="Criteria B:"
@@ -167,7 +165,7 @@ const Score: FC = () => {
                                             { text: "Needs to strengthen the arguments supporting knowledge questions." },
                                             { text: "Should consider alternative perspectives in resolving disputes." },
                                         ]}
-                                        handleAccordionToggle={() => handleAccordionToggle(1)}
+                                        handleAccordionToggle={() => handleAccordionToggle("Criteria B:")}
                                     />
                                     <CriteriaAccordionItem
                                         criteriaTitle="Criteria C:"
@@ -187,12 +185,12 @@ const Score: FC = () => {
                                             { text: "Needs to strengthen the arguments supporting knowledge questions." },
                                             { text: "Should consider alternative perspectives in resolving disputes." },
                                         ]}
-                                        handleAccordionToggle={() => handleAccordionToggle(2)}
+                                        handleAccordionToggle={() => handleAccordionToggle("Criteria C:")}
                                     />
                                 </Accordion>
 
                                 {(is2xl || isXl || (isLg && openPdf)) && (
-                                    <ActionButton onClick={handlePdfToggle} text="Check detailed Evaluation" />
+                                    <ActionButton onClick={togglePdf} text="Check detailed Evaluation" />
                                 )}
                             </>
                         ) : null}

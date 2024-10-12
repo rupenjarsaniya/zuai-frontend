@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEvent, FC, useMemo, useState } from "react";
+import { ChangeEvent, FC, useEffect, useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { toast } from "react-toastify";
 import {
@@ -13,9 +13,11 @@ import {
     CourseworkSection,
     ExploreCourseworkSection,
 } from "@/components/page/home";
-import { Course, Coursework, Subject, TabTypes } from "@/lib/types";
+import { Course, Coursework, Subject, TabType, TabTypeValues } from "@/lib/types";
 import moment from "moment";
-import { generateMetadataForPdf } from "@/lib/pdf";
+import { fileToBase64 } from "@/lib/pdf";
+import { clearAllCourseworks, getCourseworks, removeCoursework, saveCoursework } from "@/services/api.service";
+import { ClearLocalstorageDialog } from "@/components/page/home/ClearLocalstorageDialog";
 
 const courses: Course[] = [
     { id: "maths", name: "Maths" },
@@ -35,12 +37,28 @@ const Home: FC = () => {
     const [essayTitle, setEssayTitle] = useState("");
     const [error, setError] = useState("");
     const [file, setFile] = useState<File | null>(null);
-    const [selectedTab, setSelectedTab] = useState<TabTypes>("all");
+    const [selectedTab, setSelectedTab] = useState<TabType>("all");
+    const [courseworks, setCourseworks] = useState<Coursework[]>([]);
 
     const disabled = useMemo(
         () => !selectedCourse || !selectedSubject || !essayTitle || !file,
         [selectedCourse, selectedSubject, essayTitle, file],
     );
+
+    const fetchCourseworks = () => {
+        const _coursework = getCourseworks();
+        setCourseworks(_coursework);
+    };
+
+    const handleDeleteCoursework = (id: string) => {
+        removeCoursework(id);
+        fetchCourseworks();
+    };
+
+    const handleClearAllCourseworks = () => {
+        clearAllCourseworks();
+        fetchCourseworks();
+    };
 
     const handleFileUpload = (e: ChangeEvent<HTMLInputElement>) => {
         const uploadedFile = e.target.files?.[0];
@@ -78,7 +96,8 @@ const Home: FC = () => {
                 return;
             }
 
-            const fileMetadata = await generateMetadataForPdf(file);
+            const pdfData = await fileToBase64(file);
+            const wordCount = 10;
 
             const criteriaA = Math.floor(Math.random() * 4) + 7;
             const criteriaB = Math.floor(Math.random() * 2) + 5;
@@ -88,11 +107,13 @@ const Home: FC = () => {
             const readMins = Math.floor(Math.random() * 12) + 18;
             const star = Math.floor(Math.random() * 7) + 1;
 
+            const category = Object.values(TabTypeValues)[Math.floor(Math.random() * 4)] as TabType;
+
             const payload: Coursework = {
                 id: Math.random().toString(36).substr(2, 9),
                 title: essayTitle,
                 description: "",
-                file: fileMetadata,
+                file: pdfData,
                 fileName: file.name,
                 marks,
                 evaluatedDate: moment().unix(),
@@ -100,20 +121,18 @@ const Home: FC = () => {
                 criteriaB,
                 criteriaC,
                 tags: {
-                    wordCount: 0,
+                    wordCount,
                     readMins,
                     star,
                     language: "English",
                     subject: subjects.find((subject) => subject.id === selectedSubject)?.name || "",
                     course: courses.find((course) => course.id === selectedCourse)?.name || "",
                 },
+                category,
             };
 
-            // Save metadata to array of metadata in local storage
-            const metadata = localStorage.getItem("coursework_zuai") || "[]";
-            const metadataArray = JSON.parse(metadata) as Coursework[];
-            metadataArray.push(payload);
-            localStorage.setItem("coursework_zuai", JSON.stringify(metadataArray));
+            saveCoursework(payload);
+            fetchCourseworks();
 
             // Reset the form
             setFile(null);
@@ -122,12 +141,22 @@ const Home: FC = () => {
             setSelectedSubject("");
 
             toast("Coursework saved!", { type: "success" });
-        } catch (err) {
-            console.log(err);
+        } catch (err: unknown) {
+            if ((err as Error).message.includes("coursework_zuai")) {
+                toast("Looks like local storage is full. Please clear some courseworks to save new ones.", {
+                    type: "error",
+                });
+                return;
+            }
+            toast((err as Error).message, { type: "error" });
         } finally {
             setError("");
         }
     };
+
+    useEffect(() => {
+        fetchCourseworks();
+    }, []);
 
     return (
         <main className="flex flex-col gap-8 row-start-2 items-center">
@@ -157,8 +186,19 @@ const Home: FC = () => {
                     <RightCard />
                 </div>
 
-                <CourseworkSection />
-                <ExploreCourseworkSection selectedTab={selectedTab} setSelectedTab={setSelectedTab} />
+                <CourseworkSection
+                    courseworks={courseworks.slice(0, 2)}
+                    handleViewAll={() => setSelectedTab("all")}
+                    handleDeleteCoursework={handleDeleteCoursework}
+                />
+                <ExploreCourseworkSection
+                    selectedTab={selectedTab}
+                    setSelectedTab={setSelectedTab}
+                    courseworks={courseworks}
+                    handleDeleteCoursework={handleDeleteCoursework}
+                />
+
+                <ClearLocalstorageDialog handleClearAllCourseworks={handleClearAllCourseworks} />
             </div>
         </main>
     );

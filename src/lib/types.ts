@@ -3,6 +3,14 @@ export type Tags = {
     title: string;
 };
 
+export type Course = { id: string; name: string };
+
+export type Subject = { id: string; name: string };
+
+export type TabType = "all" | "ia_example" | "ee_example" | "io_example" | "tok_example";
+
+export const TabTypeValues: TabType[] = ["ia_example", "ee_example", "io_example", "tok_example"];
+
 export interface Coursework {
     id: string;
     title: string;
@@ -22,10 +30,5 @@ export interface Coursework {
     criteriaA: number;
     criteriaB: number;
     criteriaC: number;
+    category: TabType;
 }
-
-export type Course = { id: string; name: string };
-
-export type Subject = { id: string; name: string };
-
-export type TabTypes = "all" | "ia_example" | "ee_example" | "io_example" | "tok_example";

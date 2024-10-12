@@ -1,10 +1,10 @@
-export const generateMetadataForPdf = (file: File): Promise<string> => {
+export const fileToBase64 = async (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.readAsDataURL(file);
         reader.onload = () => {
             resolve(reader.result as string);
         };
-        reader.onerror = () => reject(reader.error);
+        reader.onerror = (error) => reject(error);
     });
 };

@@ -13,19 +13,25 @@ import useBreakpoints from "@/hook/useBreakpoint";
 import { pdfjs } from "react-pdf";
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(`pdfjs-dist/build/pdf.worker.min.mjs`, import.meta.url).toString();
-
 interface PdfViewerWithScrollProps {
     pdfUrl: string;
     fileName: string;
+    isCollapsed: boolean;
+    handleCollapseAndExpand: () => void;
 
     handleClose?: MouseEventHandler<HTMLButtonElement>;
 }
 
-export const PdfViewer: React.FC<PdfViewerWithScrollProps> = ({ pdfUrl, fileName, handleClose }) => {
+export const PdfViewer: React.FC<PdfViewerWithScrollProps> = ({
+    pdfUrl,
+    fileName,
+    isCollapsed,
+    handleCollapseAndExpand,
+    handleClose,
+}) => {
     const [numPages, setNumPages] = useState<number | null>(null);
     const [scale, setScale] = useState(0.8);
-    const [isCollapsed, setIsCollapsed] = useState(false);
-    const { isLg, is2xl, isXl } = useBreakpoints();
+    const { is2xl, isXl } = useBreakpoints();
 
     const containerRef = useRef<HTMLDivElement>(null);
 
@@ -50,8 +56,8 @@ export const PdfViewer: React.FC<PdfViewerWithScrollProps> = ({ pdfUrl, fileName
     };
 
     const handleCollapse = (e: MouseEvent<HTMLButtonElement>) => {
-        if (isLg || isXl || is2xl) {
-            setIsCollapsed((prev) => !prev);
+        if (isXl || is2xl) {
+            handleCollapseAndExpand();
         } else {
             handleClose?.(e);
         }
@@ -86,22 +92,20 @@ export const PdfViewer: React.FC<PdfViewerWithScrollProps> = ({ pdfUrl, fileName
                         onClick={handleCollapse}
                     >
                         <Image src={CollapseContentSvg} alt="Collapse Content" />
-                        <p className="text-xs font-bold text-[#5B6170]">Collapse</p>
+                        <p className="text-xs font-bold text-[#5B6170]">{isCollapsed ? "Expand" : "Collapse"}</p>
                     </Button>
                 </div>
             </div>
 
-            {(is2xl || isXl || isLg) && isCollapsed ? null : (
-                <div className="flex flex-col items-center w-full flex-1 sm:px-[94px] md:px-[31px] lg:px-[39px] xl:px-[79px] px-[12px]  bg-white">
-                    <div ref={containerRef} className="pdf-container overflow-y-scroll h-[80vh] w-full border shadow-lg">
-                        <Document file={pdfUrl} onLoadSuccess={onDocumentLoadSuccess}>
-                            {Array.from(new Array(numPages), (el, index) => (
-                                <Page key={index + 1} pageNumber={index + 1} scale={scale} />
-                            ))}
-                        </Document>
-                    </div>
+            <div className="flex flex-col items-center w-full flex-1 sm:px-[94px] md:px-[31px] lg:px-[39px] xl:px-[79px] px-[12px]  bg-white">
+                <div ref={containerRef} className="pdf-container overflow-y-scroll h-[80vh] w-full border shadow-lg">
+                    <Document file={pdfUrl} onLoadSuccess={onDocumentLoadSuccess}>
+                        {Array.from(new Array(numPages), (el, index) => (
+                            <Page key={index + 1} pageNumber={index + 1} scale={scale} />
+                        ))}
+                    </Document>
                 </div>
-            )}
+            </div>
         </div>
     );
 };
