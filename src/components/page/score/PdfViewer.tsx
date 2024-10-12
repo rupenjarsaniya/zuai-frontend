@@ -10,6 +10,12 @@ import CollapseContentSvg from "@/assets/images/collapse_content.svg";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import useBreakpoints from "@/hook/useBreakpoint";
+import { pdfjs } from "react-pdf";
+
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+    `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`,
+    import.meta.url,
+).toString();
 
 interface PdfViewerWithScrollProps {
     pdfUrl: string;
