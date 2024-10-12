@@ -1,21 +1,21 @@
 "use client";
 
-import { ChangeEvent, FC, useState } from "react";
+import { ChangeEvent, FC, useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { toast } from "react-toastify";
 import {
     EssayTitleInput,
     RightCard,
     CourseAndSubjectSelection,
-    Course,
-    Subject,
     Header,
     FileUpload,
     EvaluateScoreButton,
     CourseworkSection,
-    TabTypes,
     ExploreCourseworkSection,
 } from "@/components/page/home";
+import { Course, Coursework, Subject, TabTypes } from "@/lib/types";
+import moment from "moment";
+import { generateMetadataForPdf } from "@/lib/pdf";
 
 const courses: Course[] = [
     { id: "maths", name: "Maths" },
@@ -30,12 +30,17 @@ const subjects: Subject[] = [
 ];
 
 const Home: FC = () => {
-    const [selectedCourse, setSelectedCourse] = useState<string | undefined>(undefined);
-    const [selectedSubject, setSelectedSubject] = useState<string | undefined>(undefined);
+    const [selectedCourse, setSelectedCourse] = useState("");
+    const [selectedSubject, setSelectedSubject] = useState("");
     const [essayTitle, setEssayTitle] = useState("");
     const [error, setError] = useState("");
     const [file, setFile] = useState<File | null>(null);
     const [selectedTab, setSelectedTab] = useState<TabTypes>("all");
+
+    const disabled = useMemo(
+        () => !selectedCourse || !selectedSubject || !essayTitle || !file,
+        [selectedCourse, selectedSubject, essayTitle, file],
+    );
 
     const handleFileUpload = (e: ChangeEvent<HTMLInputElement>) => {
         const uploadedFile = e.target.files?.[0];
@@ -51,6 +56,76 @@ const Home: FC = () => {
             }
 
             setFile(uploadedFile);
+        }
+    };
+
+    const saveMetadata = async () => {
+        try {
+            if (!selectedCourse || !selectedSubject || !essayTitle || !file) {
+                setError("Please fill all the fields");
+                return;
+            }
+
+            const subject = subjects.find((subject) => subject.id === selectedSubject)?.name || "";
+            if (!subject) {
+                setError("Invalid subject");
+                return;
+            }
+
+            const course = courses.find((course) => course.id === selectedCourse)?.name || "";
+            if (!course) {
+                setError("Invalid course");
+                return;
+            }
+
+            const fileMetadata = await generateMetadataForPdf(file);
+
+            const criteriaA = Math.floor(Math.random() * 4) + 7;
+            const criteriaB = Math.floor(Math.random() * 2) + 5;
+            const criteriaC = Math.floor(Math.random() * 2) + 1;
+            const marks = Math.floor(Math.random() * 15) + 5;
+
+            const readMins = Math.floor(Math.random() * 12) + 18;
+            const star = Math.floor(Math.random() * 7) + 1;
+
+            const payload: Coursework = {
+                id: Math.random().toString(36).substr(2, 9),
+                title: essayTitle,
+                description: "",
+                file: fileMetadata,
+                fileName: file.name,
+                marks,
+                evaluatedDate: moment().unix(),
+                criteriaA,
+                criteriaB,
+                criteriaC,
+                tags: {
+                    wordCount: 0,
+                    readMins,
+                    star,
+                    language: "English",
+                    subject: subjects.find((subject) => subject.id === selectedSubject)?.name || "",
+                    course: courses.find((course) => course.id === selectedCourse)?.name || "",
+                },
+            };
+
+            // Save metadata to array of metadata in local storage
+            const metadata = localStorage.getItem("coursework_zuai") || "[]";
+            const metadataArray = JSON.parse(metadata) as Coursework[];
+            metadataArray.push(payload);
+            localStorage.setItem("coursework_zuai", JSON.stringify(metadataArray));
+
+            // Reset the form
+            setFile(null);
+            setEssayTitle("");
+            setSelectedCourse("");
+            setSelectedSubject("");
+
+            toast("Coursework saved!", { type: "success" });
+        } catch (err) {
+            console.log(err);
+        } finally {
+            setError("");
         }
     };
 
@@ -76,7 +151,7 @@ const Home: FC = () => {
                                 error={error}
                                 setError={() => setError("")}
                             />
-                            <EvaluateScoreButton />
+                            <EvaluateScoreButton handleSubmit={saveMetadata} disabled={disabled} />
                         </Card>
                     </div>
                     <RightCard />

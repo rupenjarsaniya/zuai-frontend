@@ -4,7 +4,7 @@ import { randomNumber } from "@/lib/utils";
 
 type Tags = {
     image: string;
-    title: string;
+    title: string | number;
 };
 
 interface CourseWorkItemProps {
@@ -12,11 +12,13 @@ interface CourseWorkItemProps {
     description: string;
     previewImage: string;
     tags: Tags[];
+    onClick: () => void;
 }
 
-export const CourseWorkItem: FC<CourseWorkItemProps> = ({ description, title, previewImage, tags }) => (
+export const CourseWorkItem: FC<CourseWorkItemProps> = ({ description, title, previewImage, tags, onClick }) => (
     <div
         className={`sm:w-[440px] w-full p-[6px] flex gap-[8px] rounded-[12px] border border-[#F4EAD8] workcard-${randomNumber()}`}
+        onClick={onClick}
     >
         <div className="hidden lg:flex max-w-[120px] w-full h-[160px] rounded-[8px] border border-[#EAF0F2] [box-shadow:0px_0.72px_2.15px_-0.36px_#0000001F] bg-[#FFFFFF] items-center justify-center p-[9px]">
             <Image src={previewImage} alt="A4" />

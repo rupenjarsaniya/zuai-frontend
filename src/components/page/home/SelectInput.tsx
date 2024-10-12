@@ -10,7 +10,7 @@ interface SelectInputProps {
 }
 
 export const SelectInput: FC<SelectInputProps> = ({ placeholder, options, value, onChange, width }) => (
-    <Select value={value}>
+    <Select value={value} onValueChange={(value) => onChange(value)}>
         <SelectTrigger
             className={`w-[${width}] border border-[#EAF0F2] rounded-[24px] bg-transparent text-[#5B6170] pt-[8px] pb-[8px] pl-[16px]`}
         >
@@ -18,12 +18,7 @@ export const SelectInput: FC<SelectInputProps> = ({ placeholder, options, value,
         </SelectTrigger>
         <SelectContent>
             {options.map((option) => (
-                <SelectItem
-                    key={option.id}
-                    value={option.id}
-                    className="text-[#5B6170] hover:bg-[#EAF0F2] cursor-pointer"
-                    onClick={() => onChange(option.id)}
-                >
+                <SelectItem key={option.id} value={option.id} className="text-[#5B6170] hover:bg-[#EAF0F2] cursor-pointer">
                     {option.name}
                 </SelectItem>
             ))}

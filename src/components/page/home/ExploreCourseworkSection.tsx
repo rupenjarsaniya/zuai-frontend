@@ -3,8 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CourseWorkItem } from "./CourseWorkItem";
 import A4Svg from "@/assets/images/A4.svg";
 import UserLabelSvg from "@/assets/images/userlabel.svg";
-
-export type TabTypes = "all" | "ia_example" | "ee_example" | "io_example" | "tok_example";
+import { TabTypes } from "@/lib/types";
 
 export const ListOfTabs: { id: TabTypes; name: string }[] = [
     { id: "all", name: "All" },
@@ -45,6 +44,7 @@ export const ExploreCourseworkSection: FC<ExploreCourseworkSectionProps> = ({ se
                         { image: UserLabelSvg, title: "Physics HL" },
                         { image: UserLabelSvg, title: "Physics HL" },
                     ]}
+                    onClick={() => {}}
                 />
             </TabsContent>
 

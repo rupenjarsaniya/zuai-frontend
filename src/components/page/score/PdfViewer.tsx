@@ -12,18 +12,16 @@ import { Button } from "@/components/ui/button";
 import useBreakpoints from "@/hook/useBreakpoint";
 import { pdfjs } from "react-pdf";
 
-pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-    `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`,
-    import.meta.url,
-).toString();
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(`pdfjs-dist/build/pdf.worker.min.mjs`, import.meta.url).toString();
 
 interface PdfViewerWithScrollProps {
     pdfUrl: string;
+    fileName: string;
 
     handleClose?: MouseEventHandler<HTMLButtonElement>;
 }
 
-export const PdfViewer: React.FC<PdfViewerWithScrollProps> = ({ pdfUrl, handleClose }) => {
+export const PdfViewer: React.FC<PdfViewerWithScrollProps> = ({ pdfUrl, fileName, handleClose }) => {
     const [numPages, setNumPages] = useState<number | null>(null);
     const [scale, setScale] = useState(0.8);
     const [isCollapsed, setIsCollapsed] = useState(false);
@@ -63,7 +61,7 @@ export const PdfViewer: React.FC<PdfViewerWithScrollProps> = ({ pdfUrl, handleCl
         <div className="bg-[#FFFFFF7A] rounded-[24px] overflow-hidden flex-1">
             <div className="flex md:items-center items-start justify-between p-[12px] md:flex-row flex-col gap-[8px]">
                 <p className="font-semibold text-sm text-[#5B6170] bg-[#98A1BB1F] rounded-[12px] px-[12px] py-[4px]">
-                    IB Economic Paper IA2.pdf
+                    {fileName}
                 </p>
 
                 <div className="flex items-center gap-[12px] md:w-fit w-full">

@@ -1,12 +1,15 @@
 "use client";
 
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect, useMemo, useState } from "react";
 import { CriteriaAccordionItem, FileCard, PdfViewer, ScoreCard } from "@/components/page/score";
 import ArrowRightSvg from "@/assets/images/arrow_right.svg";
 import Image from "next/image";
 import { Accordion } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import useBreakpoints from "@/hook/useBreakpoint";
+import { useParams } from "next/navigation";
+import { Coursework } from "@/lib/types";
+import moment from "moment";
 
 const ActionButton: FC<{ onClick: () => void; text: string }> = ({ onClick, text }) => (
     <Button className="bg-[#FFFFFF] hover:bg-[#FFFFFF] flex items-center gap-[4px] rounded-[24px] w-fit" onClick={onClick}>
@@ -16,10 +19,11 @@ const ActionButton: FC<{ onClick: () => void; text: string }> = ({ onClick, text
 );
 
 const Score: FC = () => {
+    const params = useParams();
     const { isSm, isMd, is2xl, isLg, isXl } = useBreakpoints();
     const [openPdf, setOpenPdf] = useState(false);
     const [openAccordionIndex, setOpenAccordionIndex] = useState<number | null>(null);
-    const [pdfUrl, setPdfUrl] = useState("");
+    const [coursework, setCoursework] = useState<Coursework | undefined>(undefined);
 
     const isAccordionOpen = openAccordionIndex !== null;
 
@@ -32,7 +36,21 @@ const Score: FC = () => {
     };
 
     const renderPdfViewer = (alwaysShow = false) =>
-        alwaysShow || openPdf ? <PdfViewer pdfUrl={pdfUrl} handleClose={handlePdfToggle} /> : null;
+        (alwaysShow || openPdf) && coursework ? (
+            <PdfViewer pdfUrl={coursework.file} fileName={coursework.fileName} handleClose={handlePdfToggle} />
+        ) : null;
+
+    const remark = useMemo(() => {
+        if (!coursework) {
+            return { textColor: "", text: "-" };
+        }
+
+        const percentage = (coursework?.marks * 100) / 20;
+
+        if (percentage <= 30) return { textColor: "text-[#EB751F]", text: "Poor" };
+        if (percentage <= 50) return { textColor: "text-[#F9C94E]", text: "Average" };
+        return { textColor: "text-[#3CC28A]", text: "Good" };
+    }, [coursework]);
 
     useEffect(() => {
         if (isLg && isAccordionOpen && openPdf) {
@@ -41,11 +59,11 @@ const Score: FC = () => {
     }, [isAccordionOpen, isLg, openPdf]);
 
     useEffect(() => {
-        const pdfFile = localStorage.getItem("pdfFile");
-        if (pdfFile) {
-            setPdfUrl(pdfFile);
-        }
-    }, []);
+        const metadata = localStorage.getItem("coursework_zuai") || "[]";
+        const metadataArray = JSON.parse(metadata) as Coursework[];
+        const _coursework = metadataArray.find((coursework) => coursework.id === params.id);
+        setCoursework(_coursework);
+    }, [params.id]);
 
     if (typeof Promise.withResolvers === "undefined") {
         if (typeof window !== "undefined") {
@@ -71,6 +89,10 @@ const Score: FC = () => {
         }
     }
 
+    if (!coursework) {
+        return null;
+    }
+
     return (
         <main className="flex flex-col gap-8 row-start-2 items-center">
             <div className="max-w-[1099px] w-full mt-[64px] mb-[180px]">
@@ -81,17 +103,18 @@ const Score: FC = () => {
                         className={`flex flex-col gap-[14px] ${isAccordionOpen ? "lg:w-[520px] xl:w-[560px]" : "lg:w-[356px]"} ${isLg ? (!openPdf ? "w-full" : "") : "w-full"}`}
                     >
                         {(isMd || isLg) && !openPdf && (
-                            <FileCard fileName="IB Economic Paper IA2.pdf" setOpenPdf={handlePdfToggle} />
+                            <FileCard fileName={coursework.fileName} setOpenPdf={handlePdfToggle} />
                         )}
 
                         {isMd && openPdf && renderPdfViewer()}
 
                         <ScoreCard
                             title="Overall Score"
-                            scoreText="Good"
-                            date="12 Jul 2024"
-                            progress={(13 * 100) / 20}
-                            scoreOutOf="13/20"
+                            scoreText={remark.text}
+                            scoreTextColor={remark.textColor}
+                            date={moment(coursework.evaluatedDate, "X").format("DD MMM YYYY")}
+                            progress={(coursework.marks * 100) / 20}
+                            scoreOutOf={coursework.marks + "/20"}
                         />
 
                         {isSm &&
@@ -109,8 +132,8 @@ const Score: FC = () => {
                                     <CriteriaAccordionItem
                                         criteriaTitle="Criteria A:"
                                         criteriaDescription="Understanding Knowledge Questions"
-                                        scoreOutOf="7/10"
-                                        progress={(7 * 100) / 10}
+                                        scoreOutOf={`${coursework.criteriaA}/10`}
+                                        progress={(coursework.criteriaA * 100) / 10}
                                         description="The essay identifies and focuses on the knowledge question regarding the resolvability of disputes over knowledge claims within disciplines."
                                         correctItems={[
                                             {
@@ -129,8 +152,8 @@ const Score: FC = () => {
                                     <CriteriaAccordionItem
                                         criteriaTitle="Criteria B:"
                                         criteriaDescription="Understanding Knowledge Questions"
-                                        scoreOutOf="5/10"
-                                        progress={(5 * 100) / 10}
+                                        scoreOutOf={`${coursework.criteriaB}/10`}
+                                        progress={(coursework.criteriaB * 100) / 10}
                                         description="The essay identifies and focuses on the knowledge question regarding the resolvability of disputes over knowledge claims within disciplines."
                                         correctItems={[
                                             {
@@ -149,8 +172,8 @@ const Score: FC = () => {
                                     <CriteriaAccordionItem
                                         criteriaTitle="Criteria C:"
                                         criteriaDescription="Understanding Knowledge Questions"
-                                        scoreOutOf="3/10"
-                                        progress={(3 * 100) / 10}
+                                        scoreOutOf={`${coursework.criteriaC}/10`}
+                                        progress={(coursework.criteriaC * 100) / 10}
                                         description="The essay identifies and focuses on the knowledge question regarding the resolvability of disputes over knowledge claims within disciplines."
                                         correctItems={[
                                             {

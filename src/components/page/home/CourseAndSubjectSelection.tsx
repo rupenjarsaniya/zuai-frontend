@@ -1,16 +1,14 @@
 import { FC } from "react";
 import { SelectInput } from "./SelectInput";
-
-export type Course = { id: string; name: string };
-export type Subject = { id: string; name: string };
+import { Course, Subject } from "@/lib/types";
 
 interface CourseAndSubjectSelectionProps {
     courses: Course[];
     subjects: Subject[];
-    selectedCourse: string | undefined;
-    setSelectedCourse: (course: string | undefined) => void;
-    selectedSubject: string | undefined;
-    setSelectedSubject: (subject: string | undefined) => void;
+    selectedCourse: string;
+    setSelectedCourse: (course: string) => void;
+    selectedSubject: string;
+    setSelectedSubject: (subject: string) => void;
 }
 
 export const CourseAndSubjectSelection: FC<CourseAndSubjectSelectionProps> = ({
