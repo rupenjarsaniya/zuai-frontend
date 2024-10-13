@@ -13,7 +13,7 @@ export const ListOfTabs: { id: TabType; name: string }[] = [
 ];
 
 export const navItems = [
-    { src: DashboardSvg, alt: "Dashboard", isActive: true },
+    { src: DashboardSvg, alt: "Dashboard", isActive: true, link: "/" },
     { src: BookSvg, alt: "Book" },
     { src: FileCopySvg, alt: "File Copy" },
     { src: QuizSvg, alt: "Quiz" },

@@ -39,7 +39,7 @@ export const CourseWorkItem: FC<CourseWorkItemProps> = ({
 
     return (
         <div
-            className={`sm:w-[440px] w-full p-[6px] flex gap-[8px] rounded-[12px] border border-[#F4EAD8] cursor-pointer ${workcard}`}
+            className={`sm:w-[440px] w-full lg:p-[6px] p-[12px] flex gap-[8px] rounded-[12px] border border-[#F4EAD8] cursor-pointer ${workcard}`}
             onClick={onClick}
         >
             <div className="hidden lg:flex min-w-[120px] w-full h-[160px] rounded-[8px] border border-[#EAF0F2] [box-shadow:0px_0.72px_2.15px_-0.36px_#0000001F] bg-[#FFFFFF] items-center justify-center p-[9px]">
@@ -63,7 +63,7 @@ export const CourseWorkItem: FC<CourseWorkItemProps> = ({
                 </div>
 
                 <Button
-                    className="rounded-[24px] w-fit h-fit m-0 mt-[12px] px-[8px] py-0 text-sm"
+                    className="rounded-[24px] w-fit h-fit m-0 mt-[12px] text-sm bg-[#6947BF] text-white py-[4px] px-[10px] hover:bg-[#6947BF]"
                     onClick={handleDeleteClick}
                 >
                     Delete

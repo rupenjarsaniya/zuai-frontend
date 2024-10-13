@@ -12,12 +12,23 @@ import { useRouter } from "next/navigation";
 
 interface CourseworkSectionProps {
     courseworks: Coursework[];
+    totalCourseworks: number;
     handleViewAll: () => void;
     handleDeleteCoursework: (id: string) => void;
 }
 
-export const CourseworkSection: FC<CourseworkSectionProps> = ({ courseworks, handleViewAll, handleDeleteCoursework }) => {
+export const CourseworkSection: FC<CourseworkSectionProps> = ({
+    courseworks,
+    totalCourseworks,
+    handleViewAll,
+    handleDeleteCoursework,
+}) => {
     const router = useRouter();
+
+    const handleViewAllClick = () => {
+        handleViewAll();
+        document.getElementById("explore-coursework-section")?.scrollIntoView({ behavior: "smooth" });
+    };
 
     return (
         <div className="flex flex-col gap-[12px]">
@@ -47,13 +58,15 @@ export const CourseworkSection: FC<CourseworkSectionProps> = ({ courseworks, han
                     </div>
                 )}
             </div>
-            <Button
-                className="text-base font-bold text-[#98A1BB] cursor-pointer bg-transparent shadow-none hover:bg-transparent"
-                role="button"
-                onClick={handleViewAll}
-            >
-                View all
-            </Button>
+            {totalCourseworks > 2 && (
+                <Button
+                    className="text-base font-bold text-[#98A1BB] cursor-pointer bg-transparent shadow-none hover:bg-transparent"
+                    role="button"
+                    onClick={handleViewAllClick}
+                >
+                    View all
+                </Button>
+            )}
         </div>
     );
 };

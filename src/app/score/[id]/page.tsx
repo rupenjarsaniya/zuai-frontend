@@ -10,7 +10,7 @@ import useBreakpoints from "@/hook/useBreakpoint";
 import { useParams } from "next/navigation";
 import { Coursework } from "@/lib/types";
 import moment from "moment";
-import { getCourseworkById } from "@/services/api.service";
+import { useCourseworkStore } from "@/zustand/courseworkStore";
 
 const ActionButton: FC<{ onClick: () => void; text: string }> = ({ onClick, text }) => (
     <Button className="bg-[#FFFFFF] hover:bg-[#FFFFFF] flex items-center gap-[4px] rounded-[24px] w-fit" onClick={onClick}>
@@ -22,9 +22,10 @@ const ActionButton: FC<{ onClick: () => void; text: string }> = ({ onClick, text
 const Score: FC = () => {
     const { id } = useParams();
     const { isSm, isMd, is2xl, isLg, isXl } = useBreakpoints();
+    const { getCourseworkById } = useCourseworkStore();
 
     const [isPdfOpen, setIsPdfOpen] = useState(true);
-    const [coursework, setCoursework] = useState<Coursework | null>(null);
+    const [coursework, setCoursework] = useState<Coursework | undefined>(undefined);
     const [openAccordionIndex, setOpenAccordionIndex] = useState<string | null>(null);
 
     const isAccordionOpen = useMemo(() => openAccordionIndex !== null, [openAccordionIndex]);
@@ -32,7 +33,7 @@ const Score: FC = () => {
     const remark = useMemo(() => {
         if (!coursework) return { textColor: "", text: "-" };
 
-        const percentage = (coursework?.marks * 100) / 20;
+        const percentage = (coursework?.marks * 100) / 30;
         if (percentage <= 30) return { textColor: "text-[#EB751F]", text: "Poor" };
         if (percentage <= 50) return { textColor: "text-[#F9C94E]", text: "Average" };
         return { textColor: "text-[#3CC28A]", text: "Good" };
@@ -41,7 +42,7 @@ const Score: FC = () => {
     useEffect(() => {
         const _coursework = getCourseworkById(id as string);
         setCoursework(_coursework);
-    }, [id]);
+    }, [getCourseworkById, id]);
 
     const toggleAccordion = (index: string) => {
         const isSameIndex = openAccordionIndex === index;
@@ -109,8 +110,8 @@ const Score: FC = () => {
                             scoreText={remark.text}
                             scoreTextColor={remark.textColor}
                             date={moment(coursework.evaluatedDate, "X").format("DD MMM YYYY")}
-                            progress={(coursework.marks * 100) / 20}
-                            scoreOutOf={coursework.marks + "/20"}
+                            progress={(coursework.marks * 100) / 30}
+                            scoreOutOf={coursework.marks + "/30"}
                         />
 
                         {isSm &&

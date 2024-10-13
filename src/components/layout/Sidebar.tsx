@@ -3,6 +3,7 @@ import { FC } from "react";
 import LogoSvg from "@/assets/images/logo.svg";
 import ProfilePng from "@/assets/images/profile.png";
 import { navItems } from "@/data";
+import Link from "next/link";
 
 const ICON_SIZE = 36;
 
@@ -17,7 +18,7 @@ export const Sidebar: FC = () => {
             {/* Navigation Icons */}
             <nav className="flex flex-col gap-[8px] items-center flex-1">
                 {navItems.map((item) => (
-                    <IconButton key={item.alt} src={item.src} alt={item.alt} isActive={item.isActive} />
+                    <IconButton key={item.alt} src={item.src} alt={item.alt} isActive={item.isActive} link={item.link} />
                 ))}
             </nav>
 
@@ -33,13 +34,15 @@ interface IconButtonProps {
     src: StaticImageData;
     alt: string;
     isActive?: boolean;
+    link?: string;
 }
 
-const IconButton: FC<IconButtonProps> = ({ src, alt, isActive }) => (
-    <div
+const IconButton: FC<IconButtonProps> = ({ src, alt, isActive, link }) => (
+    <Link
         className={`rounded-full p-[9px] transition-all ${isActive ? "bg-[#6947BF]" : ""}`}
         style={{ width: ICON_SIZE, height: ICON_SIZE }}
+        href={link || "/"}
     >
         <Image src={src} alt={alt} width={200} height={200} className="object-fill" />
-    </div>
+    </Link>
 );

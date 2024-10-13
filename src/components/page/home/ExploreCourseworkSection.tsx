@@ -60,7 +60,7 @@ export const ExploreCourseworkSection: FC<ExploreCourseworkSectionProps> = ({
         );
 
     return (
-        <div className="flex flex-col gap-[12px]">
+        <div className="flex flex-col gap-[12px]" id="explore-coursework-section">
             <h2 className="text-[#5B6170] text-xl font-bold">Explore coursework</h2>
             <Tabs value={selectedTab}>
                 <TabsList className="bg-transparent mb-[10px] flex-wrap h-fit justify-start gap-[6px]">

@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEvent, FC, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, FC, useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { toast } from "react-toastify";
 import {
@@ -16,9 +16,9 @@ import {
 import { Course, Coursework, Subject, TabType, TabTypeValues } from "@/lib/types";
 import moment from "moment";
 import { countPdfWords, fileToBase64 } from "@/lib/pdf";
-import { clearAllCourseworks, getCourseworks, removeCoursework, saveCoursework } from "@/services/api.service";
-import { ClearLocalstorageDialog } from "@/components/page/home/ClearLocalstorageDialog";
+import { ClearLocalstorageAlertDialog } from "@/components/page/home/ClearLocalstorageAlertDialog";
 import { pdfjs } from "react-pdf";
+import { useCourseworkStore } from "@/zustand/courseworkStore";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
@@ -41,26 +41,19 @@ const Home: FC = () => {
     const [error, setError] = useState("");
     const [file, setFile] = useState<File | null>(null);
     const [selectedTab, setSelectedTab] = useState<TabType>("all");
-    const [courseworks, setCourseworks] = useState<Coursework[]>([]);
+
+    const { addCoursework, clearCourseworks, courseworks, deleteCoursework } = useCourseworkStore();
 
     const disabled = useMemo(
         () => !selectedCourse || !selectedSubject || !essayTitle || !file,
         [selectedCourse, selectedSubject, essayTitle, file],
     );
 
-    const fetchCourseworks = () => {
-        const _coursework = getCourseworks();
-        setCourseworks(_coursework);
-    };
-
-    const handleDeleteCoursework = (id: string) => {
-        removeCoursework(id);
-        fetchCourseworks();
-    };
-
-    const handleClearAllCourseworks = () => {
-        clearAllCourseworks();
-        fetchCourseworks();
+    const resetForm = () => {
+        setFile(null);
+        setEssayTitle("");
+        setSelectedCourse("");
+        setSelectedSubject("");
     };
 
     const handleFileUpload = (e: ChangeEvent<HTMLInputElement>) => {
@@ -104,7 +97,7 @@ const Home: FC = () => {
             const criteriaA = Math.floor(Math.random() * 4) + 7;
             const criteriaB = Math.floor(Math.random() * 2) + 5;
             const criteriaC = Math.floor(Math.random() * 2) + 1;
-            const marks = Math.floor(Math.random() * 15) + 5;
+            const marks = criteriaA + criteriaB + criteriaC;
             const readMins = Math.floor(Math.random() * 12) + 18;
             const star = Math.floor(Math.random() * 7) + 1;
             const category = Object.values(TabTypeValues)[Math.floor(Math.random() * 4)] as TabType;
@@ -135,17 +128,12 @@ const Home: FC = () => {
                 category,
             };
 
-            saveCoursework(payload);
-            fetchCourseworks();
-
-            // Reset the form
-            setFile(null);
-            setEssayTitle("");
-            setSelectedCourse("");
-            setSelectedSubject("");
+            addCoursework(payload);
+            resetForm();
 
             toast("Coursework saved!", { type: "success" });
         } catch (err: unknown) {
+            console.log("🚀 ~ saveMetadata ~ err:", err);
             if ((err as Error).message.includes("coursework_zuai")) {
                 toast("Looks like local storage is full. Please clear some courseworks to save new ones.", {
                     type: "error",
@@ -158,15 +146,11 @@ const Home: FC = () => {
         }
     };
 
-    useEffect(() => {
-        fetchCourseworks();
-    }, []);
-
     return (
         <main className="flex flex-col gap-8 row-start-2 items-center">
             <div className="xl:max-w-[1099px] lg:max-w-[900px] w-full lg:px-[32px] p-[12px] xl:mt-[180px] lg:mt-[120px] mt-[40px] mb-[40px] flex flex-col gap-[40px]">
                 <div className="flex gap-[16px] items-stretch">
-                    <div className="md:max-w-[500px] w-full m-auto">
+                    <div className="md:max-w-full max-w-[500px] w-full m-auto">
                         <Header />
                         <Card className="bg-[#FCFBFDB8] p-[20px] mt-[24px] rounded-[24px]">
                             <FileUpload file={file} handleFileUpload={handleFileUpload} reset={() => setFile(null)} />
@@ -192,17 +176,18 @@ const Home: FC = () => {
 
                 <CourseworkSection
                     courseworks={courseworks.slice(0, 2)}
+                    totalCourseworks={courseworks.length}
                     handleViewAll={() => setSelectedTab("all")}
-                    handleDeleteCoursework={handleDeleteCoursework}
+                    handleDeleteCoursework={deleteCoursework}
                 />
                 <ExploreCourseworkSection
                     selectedTab={selectedTab}
                     setSelectedTab={setSelectedTab}
                     courseworks={courseworks}
-                    handleDeleteCoursework={handleDeleteCoursework}
+                    handleDeleteCoursework={deleteCoursework}
                 />
 
-                <ClearLocalstorageDialog handleClearAllCourseworks={handleClearAllCourseworks} />
+                <ClearLocalstorageAlertDialog handleClearAllCourseworks={clearCourseworks} />
             </div>
         </main>
     );
