@@ -19,13 +19,22 @@ const getCurrentBreakpoint = (width: number) => {
 };
 
 const useBreakpoints = () => {
-    const [breakpoint, setBreakpoint] = useState(getCurrentBreakpoint(window.innerWidth));
+    const [breakpoint, setBreakpoint] = useState(() => getCurrentBreakpoint(1024)); // Default to 'lg'
+    const [isClient, setIsClient] = useState(false);
 
     useEffect(() => {
+        setIsClient(true);
+    }, []);
+
+    useEffect(() => {
+        if (!isClient) return;
+
         const updateBreakpoints = () => setBreakpoint(getCurrentBreakpoint(window.innerWidth));
+        updateBreakpoints();
+
         window.addEventListener("resize", updateBreakpoints);
         return () => window.removeEventListener("resize", updateBreakpoints);
-    }, []);
+    }, [isClient]);
 
     return breakpoint;
 };

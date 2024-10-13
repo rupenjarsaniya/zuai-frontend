@@ -6,6 +6,7 @@ import "react-toastify/dist/ReactToastify.css";
 import "react-pdf/dist/esm/Page/TextLayer.css";
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 import { ToastContainer } from "react-toastify";
+import { Navbar, Rightbar, Sidebar } from "@/components/layout";
 
 const geistSans = localFont({
     src: "./fonts/GeistVF.woff",
@@ -32,7 +33,12 @@ export default function RootLayout({
         <html lang="en">
             <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
                 <ToastContainer />
-                {children}
+                <div className="flex sm:flex-row flex-col min-h-screen sm:max-h-screen max-h-fit overflow-hidden">
+                    <Navbar />
+                    <Sidebar />
+                    <div className="overflow-y-auto flex-1">{children}</div>
+                    <Rightbar />
+                </div>
             </body>
         </html>
     );

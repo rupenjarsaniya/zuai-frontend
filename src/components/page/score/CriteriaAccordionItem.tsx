@@ -2,6 +2,7 @@ import { AccordionContent, AccordionItem, AccordionTrigger } from "@/components/
 import { FC, useMemo } from "react";
 import { CircularProgress } from "./CircularProgress";
 import { ImprovementSection } from "./ImprovementSection";
+import useBreakpoints from "@/hook/useBreakpoint";
 
 interface CriteriaAccordionItemProps {
     criteriaTitle: string;
@@ -10,6 +11,7 @@ interface CriteriaAccordionItemProps {
     progress: number;
     description: string;
     handleAccordionToggle: () => void;
+    isOpen: boolean;
 
     correctItems?: Array<{ text: string }>;
     warningItems?: Array<{ text: string }>;
@@ -24,7 +26,10 @@ export const CriteriaAccordionItem: FC<CriteriaAccordionItemProps> = ({
     handleAccordionToggle,
     correctItems,
     warningItems,
+    isOpen,
 }) => {
+    const { isSm, isMd, isLg } = useBreakpoints();
+
     const progressColor = useMemo(() => {
         if (progress <= 30) return "text-[#EB751F]"; // Red for progress <= 30
         if (progress <= 50) return "text-[#F9C94E]"; // Orange for progress <= 50
@@ -35,11 +40,13 @@ export const CriteriaAccordionItem: FC<CriteriaAccordionItemProps> = ({
         <AccordionItem value={criteriaTitle} className="bg-[#FFFFFF] rounded-[24px]" onClick={handleAccordionToggle}>
             <AccordionTrigger className="py-[12px] px-[16px] hover:no-underline">
                 <div className="flex items-center gap-[16px] pr-5">
-                    <div className="w-[40px] h-[40px]">
+                    <div
+                        className={`w-[60px] h-[60px] ${!isOpen ? "lg:w-[40px] lg:h-[40px]" : ""} flex items-center justify-center`}
+                    >
                         <CircularProgress
                             progress={progress}
                             text={scoreOutOf}
-                            size={40}
+                            size={isSm || isMd || isLg || isOpen ? 60 : 40}
                             textSize="text-xs"
                             color={progressColor}
                         />

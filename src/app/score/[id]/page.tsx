@@ -20,37 +20,14 @@ const ActionButton: FC<{ onClick: () => void; text: string }> = ({ onClick, text
 );
 
 const Score: FC = () => {
-    const params = useParams();
+    const { id } = useParams();
     const { isSm, isMd, is2xl, isLg, isXl } = useBreakpoints();
-    const [openPdf, setOpenPdf] = useState(false);
-    const [openAccordionIndex, setOpenAccordionIndex] = useState<string | null>(null);
+
+    const [isPdfOpen, setIsPdfOpen] = useState(true);
     const [coursework, setCoursework] = useState<Coursework | null>(null);
-    const [isCollapsed, setIsCollapsed] = useState(false);
+    const [openAccordionIndex, setOpenAccordionIndex] = useState<string | null>(null);
 
     const isAccordionOpen = useMemo(() => openAccordionIndex !== null, [openAccordionIndex]);
-
-    const handleAccordionToggle = (index: string) => {
-        setOpenAccordionIndex((prev) => (prev === index ? null : index));
-        // This condition is to collapse the accordion when the screen size is large, and the accordion is open
-        setIsCollapsed((isLg || isXl || is2xl) && openAccordionIndex !== index);
-    };
-
-    const togglePdf = () => {
-        setOpenPdf((prev) => !prev);
-        // This condition exists because the accordion should not be opened when the pdf is opened
-        if (isLg) {
-            setOpenAccordionIndex(null);
-        }
-        setIsCollapsed(false);
-    };
-
-    const handleCollapseAndExpand = () => {
-        // This condition exists because the accordion should not be opened when the pdf is opened
-        if (isXl || is2xl) {
-            setOpenAccordionIndex((prev) => (prev === null ? "Criteria A:" : null));
-        }
-        setIsCollapsed((prev) => !prev);
-    };
 
     const remark = useMemo(() => {
         if (!coursework) return { textColor: "", text: "-" };
@@ -62,26 +39,50 @@ const Score: FC = () => {
     }, [coursework]);
 
     useEffect(() => {
-        // This condition exists because the pdf should be closed when the accordion is open and the screen size is large
-        if (isLg && isAccordionOpen && openPdf) {
-            setOpenPdf(false);
-        }
-    }, [isAccordionOpen, isLg, openPdf]);
-
-    useEffect(() => {
-        const _coursework = getCourseworkById(params.id as string);
+        const _coursework = getCourseworkById(id as string);
         setCoursework(_coursework);
-    }, [params.id]);
+    }, [id]);
+
+    const toggleAccordion = (index: string) => {
+        const isSameIndex = openAccordionIndex === index;
+        if (isXl || is2xl) {
+            if (isSameIndex) {
+                setIsPdfOpen(true);
+            } else {
+                setIsPdfOpen(false);
+            }
+        }
+
+        if (isLg && isPdfOpen) {
+            setIsPdfOpen(false);
+        }
+
+        setOpenAccordionIndex(isSameIndex ? null : index);
+    };
+
+    const handleOpenPdf = () => {
+        setOpenAccordionIndex(null);
+        setIsPdfOpen(true);
+    };
+
+    const handleClosePdf = () => {
+        setIsPdfOpen(false);
+        if (isXl || is2xl) {
+            setOpenAccordionIndex("Criteria A:"); // Open first accordion by default
+        }
+    };
 
     const renderPdfViewer = (alwaysShow = false) =>
-        (alwaysShow || openPdf) && coursework ? (
-            <PdfViewer
-                pdfUrl={coursework.file}
-                fileName={coursework.fileName}
-                handleClose={togglePdf}
-                handleCollapseAndExpand={handleCollapseAndExpand}
-                isCollapsed={isCollapsed}
-            />
+        (alwaysShow || isPdfOpen) && coursework ? (
+            <div className="w-full">
+                <PdfViewer
+                    pdfUrl={coursework.file}
+                    fileName={coursework.fileName}
+                    handleClose={handleClosePdf}
+                    handleOpen={handleOpenPdf}
+                    isPdfOpen={isPdfOpen}
+                />
+            </div>
         ) : null;
 
     if (!coursework) {
@@ -90,16 +91,18 @@ const Score: FC = () => {
 
     return (
         <main className="flex flex-col gap-8 row-start-2 items-center">
-            <div className="max-w-[1099px] w-full mt-[64px] mb-[180px]">
+            <div className="2xl:max-w-[1400px] w-full sm:px-[24px] px-[12px] sm:mt-[64px] mt-[24px] mb-[40px]">
                 <div className="flex gap-[16px] items-start">
-                    {(is2xl || isXl || (isLg && openPdf)) && renderPdfViewer(true)}
+                    {isLg && renderPdfViewer()}
+                    {(isXl || is2xl) && renderPdfViewer(true)}
 
                     <div
-                        className={`flex flex-col gap-[14px] ${isAccordionOpen ? "lg:w-[520px] xl:w-[560px]" : "lg:w-[356px]"} ${isLg ? (!openPdf ? "w-full" : "") : "w-full"}`}
+                        className={`flex flex-col gap-[14px]  ${isSm || isMd || isLg ? "w-full" : ""} xl:min-w-[356px] lg:min-w-[336px] md:min-w-[316px]`}
                     >
-                        {(isMd || isLg) && !openPdf && <FileCard fileName={coursework.fileName} setOpenPdf={togglePdf} />}
-
-                        {isMd && openPdf && renderPdfViewer()}
+                        {(isMd || isLg) && !isPdfOpen && (
+                            <FileCard fileName={coursework.fileName} setOpenPdf={() => handleOpenPdf()} />
+                        )}
+                        {isMd && isPdfOpen && renderPdfViewer()}
 
                         <ScoreCard
                             title="Overall Score"
@@ -111,15 +114,15 @@ const Score: FC = () => {
                         />
 
                         {isSm &&
-                            (openPdf ? (
-                                <ActionButton onClick={togglePdf} text="Check detailed Evaluation" />
+                            (isPdfOpen ? (
+                                <ActionButton onClick={handleClosePdf} text="Check detailed Evaluation" />
                             ) : (
-                                <ActionButton onClick={togglePdf} text="Expand & view your file" />
+                                <ActionButton onClick={handleOpenPdf} text="Expand & view your file" />
                             ))}
 
                         {isSm && renderPdfViewer()}
 
-                        {!isSm || !openPdf ? (
+                        {isSm && isPdfOpen ? null : (
                             <>
                                 <Accordion
                                     type="single"
@@ -145,7 +148,8 @@ const Score: FC = () => {
                                             { text: "Needs to strengthen the arguments supporting knowledge questions." },
                                             { text: "Should consider alternative perspectives in resolving disputes." },
                                         ]}
-                                        handleAccordionToggle={() => handleAccordionToggle("Criteria A:")}
+                                        handleAccordionToggle={() => toggleAccordion("Criteria A:")}
+                                        isOpen={isAccordionOpen}
                                     />
                                     <CriteriaAccordionItem
                                         criteriaTitle="Criteria B:"
@@ -165,7 +169,8 @@ const Score: FC = () => {
                                             { text: "Needs to strengthen the arguments supporting knowledge questions." },
                                             { text: "Should consider alternative perspectives in resolving disputes." },
                                         ]}
-                                        handleAccordionToggle={() => handleAccordionToggle("Criteria B:")}
+                                        handleAccordionToggle={() => toggleAccordion("Criteria B:")}
+                                        isOpen={isAccordionOpen}
                                     />
                                     <CriteriaAccordionItem
                                         criteriaTitle="Criteria C:"
@@ -185,15 +190,16 @@ const Score: FC = () => {
                                             { text: "Needs to strengthen the arguments supporting knowledge questions." },
                                             { text: "Should consider alternative perspectives in resolving disputes." },
                                         ]}
-                                        handleAccordionToggle={() => handleAccordionToggle("Criteria C:")}
+                                        handleAccordionToggle={() => toggleAccordion("Criteria C:")}
+                                        isOpen={isAccordionOpen}
                                     />
                                 </Accordion>
 
-                                {(is2xl || isXl || (isLg && openPdf)) && (
-                                    <ActionButton onClick={togglePdf} text="Check detailed Evaluation" />
+                                {(is2xl || isXl || (isLg && isPdfOpen)) && (
+                                    <ActionButton onClick={handleClosePdf} text="Check detailed Evaluation" />
                                 )}
                             </>
-                        ) : null}
+                        )}
                     </div>
                 </div>
             </div>

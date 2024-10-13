@@ -42,7 +42,7 @@ export const CourseWorkItem: FC<CourseWorkItemProps> = ({
             className={`sm:w-[440px] w-full p-[6px] flex gap-[8px] rounded-[12px] border border-[#F4EAD8] cursor-pointer ${workcard}`}
             onClick={onClick}
         >
-            <div className="hidden lg:flex max-w-[120px] w-full h-[160px] rounded-[8px] border border-[#EAF0F2] [box-shadow:0px_0.72px_2.15px_-0.36px_#0000001F] bg-[#FFFFFF] items-center justify-center p-[9px]">
+            <div className="hidden lg:flex min-w-[120px] w-full h-[160px] rounded-[8px] border border-[#EAF0F2] [box-shadow:0px_0.72px_2.15px_-0.36px_#0000001F] bg-[#FFFFFF] items-center justify-center p-[9px]">
                 <Image src={previewImage} alt="A4" />
             </div>
             <div className="flex flex-col">

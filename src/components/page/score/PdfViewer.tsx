@@ -1,7 +1,7 @@
 "use client";
 
 import { Document, Page } from "react-pdf";
-import { MouseEvent, MouseEventHandler, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import screenfull from "screenfull";
 import ZoomOutSvg from "@/assets/images/zoomout.svg";
 import ZoomInSvg from "@/assets/images/zoomin.svg";
@@ -9,29 +9,27 @@ import FullscreenSvg from "@/assets/images/fullscreen.svg";
 import CollapseContentSvg from "@/assets/images/collapse_content.svg";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import useBreakpoints from "@/hook/useBreakpoint";
 import { pdfjs } from "react-pdf";
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(`pdfjs-dist/build/pdf.worker.min.mjs`, import.meta.url).toString();
+
 interface PdfViewerWithScrollProps {
     pdfUrl: string;
     fileName: string;
-    isCollapsed: boolean;
-    handleCollapseAndExpand: () => void;
-
-    handleClose?: MouseEventHandler<HTMLButtonElement>;
+    isPdfOpen: boolean;
+    handleClose: () => void;
+    handleOpen: () => void;
 }
 
 export const PdfViewer: React.FC<PdfViewerWithScrollProps> = ({
     pdfUrl,
     fileName,
-    isCollapsed,
-    handleCollapseAndExpand,
+    isPdfOpen: openPdf,
     handleClose,
+    handleOpen,
 }) => {
     const [numPages, setNumPages] = useState<number | null>(null);
     const [scale, setScale] = useState(0.8);
-    const { is2xl, isXl } = useBreakpoints();
 
     const containerRef = useRef<HTMLDivElement>(null);
 
@@ -55,16 +53,16 @@ export const PdfViewer: React.FC<PdfViewerWithScrollProps> = ({
         }
     };
 
-    const handleCollapse = (e: MouseEvent<HTMLButtonElement>) => {
-        if (isXl || is2xl) {
-            handleCollapseAndExpand();
+    const togglePdf = () => {
+        if (openPdf) {
+            handleClose();
         } else {
-            handleClose?.(e);
+            handleOpen();
         }
     };
 
     return (
-        <div className="bg-[#FFFFFF7A] rounded-[24px] overflow-hidden flex-1">
+        <div className="bg-[#FFFFFF7A] rounded-[24px] overflow-hidden">
             <div className="flex md:items-center items-start justify-between p-[12px] md:flex-row flex-col gap-[8px]">
                 <p className="font-semibold text-sm text-[#5B6170] bg-[#98A1BB1F] rounded-[12px] px-[12px] py-[4px]">
                     {fileName}
@@ -89,10 +87,10 @@ export const PdfViewer: React.FC<PdfViewerWithScrollProps> = ({
                     </div>
                     <Button
                         className="sm:flex hidden items-center justify-center gap-[2px] bg-[#FFFFFF] rounded-[24px] p-[4px] pr-[12px] h-fit m-0 hover:bg-[#FFFFFF] shadow-none"
-                        onClick={handleCollapse}
+                        onClick={togglePdf}
                     >
                         <Image src={CollapseContentSvg} alt="Collapse Content" />
-                        <p className="text-xs font-bold text-[#5B6170]">{isCollapsed ? "Expand" : "Collapse"}</p>
+                        <p className="text-xs font-bold text-[#5B6170]">{openPdf ? "Collapse" : "Expand"}</p>
                     </Button>
                 </div>
             </div>
