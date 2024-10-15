@@ -75,7 +75,9 @@ const Score: FC = () => {
 
     const renderPdfViewer = (alwaysShow = false) =>
         (alwaysShow || isPdfOpen) && coursework ? (
-            <div className="w-full">
+            <div
+                className={`${isPdfOpen ? "2xl:max-w-[972px] xl:max-w-[858px] lg:max-w-[638px] md:max-w-[482px]" : "2xl:max-w-[500px] xl:max-w-[500px] lg:max-w-[500px]"} w-full`}
+            >
                 <PdfViewer
                     pdfUrl={coursework.file}
                     fileName={coursework.fileName}
@@ -97,9 +99,7 @@ const Score: FC = () => {
                     {isLg && renderPdfViewer()}
                     {(isXl || is2xl) && renderPdfViewer(true)}
 
-                    <div
-                        className={`flex flex-col gap-[14px]  ${isSm || isMd || isLg ? "w-full" : ""} xl:min-w-[356px] lg:min-w-[336px] md:min-w-[316px]`}
-                    >
+                    <div className={`flex flex-col gap-[14px] w-full`}>
                         {(isMd || isLg) && !isPdfOpen && (
                             <FileCard fileName={coursework.fileName} setOpenPdf={() => handleOpenPdf()} />
                         )}

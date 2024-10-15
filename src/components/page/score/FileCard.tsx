@@ -12,7 +12,7 @@ interface FileCardProps {
 export const FileCard: FC<FileCardProps> = ({ fileName, setOpenPdf }) => (
     <Card className="bg-[#FFFFFF] rounded-[24px] sm:w-full w-fit sm:px-[16px] sm:py-[9px] px-[16px] py-[8px]">
         <CardContent className="flex items-center justify-between gap-[20px] p-0">
-            <p className="sm:block hidden font-semibold text-sm text-[#5B6170] bg-[#98A1BB1F] rounded-[12px] px-[12px] py-[4px]">
+            <p className="sm:block hidden font-semibold text-sm text-[#5B6170] bg-[#98A1BB1F] rounded-[12px] px-[12px] py-[4px] w-[216px] truncate">
                 {fileName}
             </p>
             <Button

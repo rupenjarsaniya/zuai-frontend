@@ -64,7 +64,7 @@ export const PdfViewer: React.FC<PdfViewerWithScrollProps> = ({
     return (
         <div className="bg-[#FFFFFF7A] rounded-[24px] overflow-hidden">
             <div className="flex md:items-center items-start justify-between p-[12px] md:flex-row flex-col gap-[8px]">
-                <p className="font-semibold text-sm text-[#5B6170] bg-[#98A1BB1F] rounded-[12px] px-[12px] py-[4px]">
+                <p className="font-semibold text-sm text-[#5B6170] bg-[#98A1BB1F] rounded-[12px] px-[12px] py-[4px] w-[205px] truncate">
                     {fileName}
                 </p>
 
