@@ -23,9 +23,11 @@ import { useCourseworkStore } from "@/zustand/courseworkStore";
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 const courses: Course[] = [
-    { id: "maths", name: "Maths" },
-    { id: "physics", name: "Physics" },
-    { id: "chemistry", name: "Chemistry" },
+    { id: "project", name: "Project" },
+    { id: "assignment", name: "Assignment" },
+    { id: "designStudies", name: "Design Studies" },
+    { id: "research", name: "Research" },
+    { id: "essay", name: "Essay" },
 ];
 
 const subjects: Subject[] = [
